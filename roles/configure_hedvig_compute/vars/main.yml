@@ -1,0 +1,12 @@
+---
+
+hedvig_dir: "/home/ec2-user/hedvig/hedvig-installer"
+role_path: "/home/ec2-user/openshift/roles/configure_hedvig_compute"
+
+required_ports:
+  - "50000/tcp"
+  - "50002/tcp"
+  - "50004/tcp"
+  - "50008/tcp" 
+  - "50022/tcp"
+  - "3260/tcp"

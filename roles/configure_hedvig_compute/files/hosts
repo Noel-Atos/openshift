@@ -1,0 +1,17 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+
+# Satellite
+10.48.x.xx   ip-10-48-x-xx.eu-west-1.compute.internal
+
+# Hedvig Nodes
+10.35.x.xxx  ip-10-35-x-xxx.az-a.hedvig-live.some.url.net
+10.35.x.x    ip-10-35-x-x.az-a.hedvig-live.some.url.net
+10.35.x.xx   ip-10-35-x-xx.az-a.hedvig-live.some.url.net
+10.43.x.xxx  ip-10-43-x-xxx.az-b.hedvig-live.some.url.net
+10.43.x.xxx  ip-10-43-x-xxx.az-b.hedvig-live.some.url.net
+10.43.x.xxx  ip-10-43-x-xxx.az-b.hedvig-live.some.url.net
+10.51.x.xx   ip-10-51-x-xx.az-c.hedvig-live.some.url.net
+10.51.x.xxx  ip-10-51-x-xxx.az-c.hedvig-live.some.url.net
+10.51.x.xx   ip-10-51-x-xx.az-c.hedvig-live.some.url.net
+

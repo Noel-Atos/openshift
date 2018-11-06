@@ -1,0 +1,57 @@
+---
+
+
+- name: Log in using service account
+  command: "oc login {{ ocp_uri }} --token={{ ocp_token }}  --insecure-skip-tls-verify" 
+
+- name: Run hostpath_scc.yml
+  shell: "oc create -f {{ role_path }}/files/hostpath_scc.yml"
+  register: result_hostpath
+  failed_when:  false
+  change_when: '"already exists" not in result_patch.stdout'
+#  ignore_errors: true
+
+- name: Patch Hostnetwork
+  shell: sh "{{ role_path }}/files/patch_hostnetwork.sh"
+  register: result_patch
+  failed_when:  false
+  change_when: '"not patched" not in result_patch.stdout'
+
+- debug:
+    var: result_patch
+
+- name: Patch hostpath
+  shell: sh "{{ role_path }}/files/patch_hostpath.sh"
+  failed_when:  false
+  change_when: '"not patched" not in result_patch.stdout'
+
+- name: Patch privileged 
+  shell: sh "{{ role_path }}/files/patch_privileged .sh"
+  failed_when:  false
+#  failed_when: result_patch.stdout != 0 
+  change_when: '"not patched" not in result_patch.stdout'
+#  change_when: '"not patched" in result_patch.stderr'
+
+- name: 
+  shell: "oc adm policy add-scc-to-group hostpath system:authenticated"
+
+- name:
+  shell:  "oc adm policy add-scc-to-group hostpath system:admin"
+
+- name: Copy Daemonset template
+  template:
+    src: "{{ role_path }}/templates/daemonset.yml.j2"
+    dest: "{{ hedvig_installer_path }}/manifests/ds/daemonset.yml"
+
+- name: Create daemonset
+  shell: oc create -f daemonset.yml
+  args:
+    chdir:  "{{ hedvig_installer_path }}/manifests/ds/"
+  register: result_daemonset
+  failed_when:  false
+  change_when: '"AlreadyExists" not in result_daemonset.stdout'
+
+- name: Log out 
+  command: "oc logout"
+
+

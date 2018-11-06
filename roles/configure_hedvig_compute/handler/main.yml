@@ -1,0 +1,8 @@
+---
+- name: firewalld complete reload
+  command: firewall-cmd --complete-reload
+
+- name: sytemctl reload
+  command: systemctl daemon-reload
+...
+

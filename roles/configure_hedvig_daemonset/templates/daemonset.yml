@@ -1,0 +1,57 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: hedvigcvm
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: hedvigcvm
+  template:
+    metadata:
+      labels:
+        app: hedvigcvm
+    spec:
+      hostNetwork: true
+      containers:
+      - name: hedvigcvm
+        image: hedviginc/hedvigcvm:"{{ image_id }}"
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/sh"]
+        args: ["-c", "/usr/sbin/init"]
+        env:
+        - name: HEDVIG_SEED_1
+          value: "'{{ hedvig_seed_1 }}'"
+        - name: HEDVIG_SEED_2
+          value: "'{{ hedvig_seed_2 }}'"
+        - name: HEDVIG_SEED_3
+          value: "'{{ hedvig_seed_3 }}'"
+        - name: KUBE_CLUSTER_HEDVIG_ID
+          value: "'{{kube_cluster_hedvig_id }}'"
+        volumeMounts:
+        - name: sysfscgroup
+          mountPath: /sys/fs/cgroup
+        - name: hedvigcache
+          mountPath: /hedvig/cache
+        - name: iscsi
+          mountPath: /etc/iscsi
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "2"
+          limits:
+            memory: "2Gi"
+            cpu: "2"
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: sysfscgroup
+        hostPath:
+          path: /sys/fs/cgroup
+      - name: hedvigcache
+        hostPath:
+          path: /hedvig/cache
+      - name: iscsi
+        hostPath:
+          path: /etc/iscsi

@@ -1,0 +1,82 @@
+---
+- name: Required packages
+  yum:
+    name: iscsi-initiator-utils
+    state: present
+  become: yes
+
+- name: Ensure rcpbind service is started
+  service:
+    name: rpcbind
+    state: started
+  become: yes
+
+- name: Copy Host File
+  copy:
+    src: hosts
+    dest: /etc/hosts
+  become: yes
+
+- name: Open firewall ports
+  firewalld:
+    port: "{{ item }}"
+    state: enabled
+    permanent: true
+  become: yes
+#  notify:
+#    - firewalld complete reload
+  with_items: "{{ required_ports }}"
+
+- name: Reload Firewall
+  command: firewall-cmd --complete-reload
+  become: yes
+
+- name: Copy meta service to compute nodes
+  copy:
+    src: "{{ role_path }}/files/metacache.service"
+    dest: "/etc/systemd/system/metacache.service"
+    owner: root
+    group: root
+    mode: 0644
+  become: yes
+
+- name: Reload systemctl
+  command: systemctl daemon-reload
+  become: yes
+
+- name: Start service metacache, if not started
+  service:
+    name: metacache
+    state: started
+    enabled: yes
+
+- name: Verify metacache running
+  shell: 'df -kh | grep "/hedvig/cache"'
+  register: metacache_out
+  failed_when:  metacache_out.rc !=0
+
+- debug:
+    var: metacache_out
+
+- name: Disable Selinx on Compute Nodes
+  lineinfile:
+    path: /etc/selinux/config
+    regexp: '^SELINUX='
+    line: 'SELINUX=disabled'
+  become: yes
+  register: task_result
+
+- name: Reboot immediately if there was a change.
+  shell: "sleep 5 && shutdown -r now"
+  async: 1
+  poll: 0
+  become: yes
+  when: task_result is changed
+
+- name: Wait for the reboot to complete if there was a change.
+  wait_for_connection:
+    connect_timeout: 80
+    sleep: 5
+    delay: 5
+    timeout: 500
+  when: task_result is changed

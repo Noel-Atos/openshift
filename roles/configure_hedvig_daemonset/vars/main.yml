@@ -1,0 +1,14 @@
+---
+
+hedvig_installer_path: "/home/ec2-user/hedvig/hedvig-installer"
+hedvig_files: "/home/ec2-user/openshift/roles/configure_hedvig_daemonset/files"
+role_path: "/home/ec2-user/openshift/roles/configure_hedvig_daemonset"
+
+hedvig_seed_1: "10.35.x.xxx"
+hedvig_seed_2: "10.43.x.xxx"
+hedvig_seed_3: "10.51.x.xx"
+kube_cluster_hedvig_id: "ocp04.atoshcp.net"
+image_id: v3.8.8
+
+ocp_uri: https://internal url.ocp04.paas.atoshcp.net:8443
+ocp_token:

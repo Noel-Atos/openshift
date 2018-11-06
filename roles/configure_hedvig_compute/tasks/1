@@ -1,0 +1,10 @@
+---
+- hosts: com 
+  roles:
+    - configure_hedvig_compute
+
+#- hosts: local
+#   roles:
+#    - configure_hedvig 
+
+

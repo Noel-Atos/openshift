@@ -1,0 +1,31 @@
+---
+- name: Log in using service account
+  command: "oc login {{ ocp_uri }} --token={{ ocp_token }}  --insecure-skip-tls-verify"
+
+- name: Update backend.json for Hedvig Cluster
+  template:
+    src: backend.json.j2
+    dest: "{{ hedvig_installer_path }}/setup/backend.json"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+
+- name: Update Image Name
+  template:
+    src: hedvig-deployment.yaml.j2
+    dest: "{{ hedvig_installer_path }}/hedvig-deployment.yaml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Install Hedvig Dynamic Provisioner
+  shell: ./install_hedvig.sh -n hedvig
+  args:
+    chdir: "{{ hedvig_installer_path }}"
+  register: result_prov
+
+- debug:
+    var: result_prov
+
+
+- name: Log out
+  command: "oc logout"

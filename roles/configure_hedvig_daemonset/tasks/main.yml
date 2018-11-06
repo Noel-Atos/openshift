@@ -1,0 +1,60 @@
+---
+### Version 2 ###
+- name: Log in using service account
+  command: "oc login {{ ocp_uri }} --token={{ ocp_token }}  --insecure-skip-tls-verify"
+
+- name: Run hostpath_scc.yml
+  shell: "oc create -f {{ role_path }}/files/hostpath_scc.yml"
+  register: result_hostpath
+  failed_when:  '"(AlreadyExists)" not in result_hostpath.stderr and result_hostpath.rc != 0'
+  change_when: '"(AlreadyExists)" in result_hostpath.stderr'
+
+- debug:
+    var: result_hostpath
+
+
+
+- name: Patch Hostnetwork
+  shell: sh "{{ role_path }}/files/patch_hostnetwork.sh"
+  register: result_patch
+  failed_when: "'not patched' not in result_patch.stdout and result_patch.rc != 0"
+  changed_when:  "'patched' in result_patch.stdout"   
+
+- debug:
+    var: result_patch
+
+- name: Patch hostpath
+  shell: sh "{{ role_path }}/files/patch_hostpath.sh"
+  register: result_hostpath
+  failed_when:  "'not patched' not in result_hostpath.stdout and result_hostpath.rc != 0"
+  change_when: '"patched" not in result_hostpath.stdout'
+  ignore_errors: yes
+
+- name: Patch privileged 
+  shell: sh "{{ role_path }}/files/patch_privileged.sh"
+  register: result_priv
+  failed_when:  "'not patched' not in result_priv.stdout and result_priv.rc != 0"
+  change_when: '"patched" not in result_priv.stdout'
+
+
+- name: Add policy to authenticated 
+  shell: "oc adm policy add-scc-to-group hostpath system:authenticated"
+
+- name: Add policy to admin
+  shell:  "oc adm policy add-scc-to-group hostpath system:admin"
+
+- name: Copy Daemonset template
+  template:
+    src: "{{ role_path }}/templates/daemonset.yml.j2"
+    dest: "{{ hedvig_installer_path }}/manifests/ds/daemonset.yml"
+
+- name: Create daemonset
+  shell: oc create -f daemonset.yml
+  args:
+    chdir:  "{{ hedvig_installer_path }}/manifests/ds/"
+  register: result_daemonset
+  failed_when:  '"(AlreadyExists)" not in result_daemonset.stderr and result_daemonset.rc != 0' 
+  change_when: '"(AlreadyExists)" in result_daemonset.stderr'
+
+- name: Log out
+  command: "oc logout"

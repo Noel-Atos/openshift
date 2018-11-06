@@ -1,0 +1,38 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hedvig
+  labels:
+    app: provisioner.hedvig.io
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: provisioner.hedvig.io
+    spec:
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      serviceAccount: hedvig
+      containers:
+      - name: hedvig-main
+        image: hedviginc/hedvigprovisioner:{{ image_version }}
+        command:
+        - /usr/local/bin/hedvig_orchestrator
+        args:
+        - -k8s_pod
+        #- -debug
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config
+        livenessProbe:
+          exec:
+            command:
+              - test
+              - '`find alive.txt -mmin -1`'
+          initialDelaySeconds: 15
+          periodSeconds: 15
+      volumes:
+      - name: config-volume
+        configMap:
+              name: hedvig-launcher-config
